@@ -1,0 +1,101 @@
+<div id="holder"></div> 
+<progress id="uploadprogress" value="0"></progress>
+
+<button id="aborter">abort this</button>
+
+<script>
+
+/*
+HTML5 image uploader
+use drag n drop events, XHR2, formData object and FileReader
+*/
+
+document.getElementById("aborter").addEventListener("click",abortme, false);
+
+var holder = document.getElementById('holder'),
+progress = document.getElementById('uploadprogress'),
+fileupload = document.getElementById('upload'),
+xhr = new XMLHttpRequest(),
+acceptedTypes = {
+      'image/png': true,
+      'image/jpeg': true,
+      'image/gif': true
+    };
+
+//return false : nessesary, will prevent default - dont just display an image 
+holder.ondragover = function () {return false; };
+holder.ondragend = function () {return false; };
+
+//on drop clear div's inner HTML ,  prevent default and continue
+holder.ondrop = function (e) {
+   holder.innerHTML="";
+   e.preventDefault();
+   checkfiles(e.dataTransfer.files);
+}
+
+function checkfiles(files) {
+	if (files.length>1){
+		return holder.innerHTML="Only on image/time";		
+	}	
+	if (!acceptedTypes[files[0].type]){
+		return holder.innerHTML="Not an image";		
+	}	
+	readfiles(files);	
+}
+
+function readfiles(files) {
+	//create form data object and append image
+    var formData = new FormData();  
+    formData.append('file', files[0]);
+
+	//use file reader object to read image - append to drop square so there is a thumbnail of the uploading image
+    var reader = new FileReader();
+    reader.onload = function (event) {
+      var image = new Image();
+      image.src = event.target.result;
+      image.width = 50; 
+      holder.appendChild(image);
+    };
+    reader.readAsDataURL(files[0]);
+	   
+	xhr.onreadystatechange = function(){
+		if (xhr.readyState == 4 && xhr.status == 200) {			
+			//data come as sereliazed json
+			//the format is x,y,z - so refer to them as data[0], data[1] etc.
+			//flag=1 is saved flag=0 is not an image (server side re-checks file type)		
+			var data = JSON.parse(xhr.responseText);
+			if(data[0]==1){
+				document.getElementById("info").innerHTML="Done!";
+				document.getElementById("items").innerHTML= "data id is : "+data[1]+" data name is : "+data[2];
+			}
+			if(data[0]==0){
+				info.innerHTML="Dude, that's not an image.";
+			}
+		}
+	}
+	
+	xhr.open("POST", "upload2.php");
+     
+	//fill the bar
+	xhr.upload.onprogress = function(e) {
+		progress.max = e.total;
+		progress.value = e.loaded;
+	}
+
+	xhr.upload.onload = function(e) {
+		progress.value = 1;
+		progress.max = 1;
+	}  
+
+    xhr.send(formData);
+    
+}
+
+
+function abortme(){
+	xhr.abort();
+	alert("aborted");
+}
+
+</script>
+
