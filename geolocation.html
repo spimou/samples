@@ -1,0 +1,59 @@
+<script>
+/*
+HTML5 geolocation
+this is with older version of openlayers 2.0
+based on the amazing code found here: "Pro HTML5 Programming Powerful APIs for Richer Internet Application Development" by Peter Lubbers, Brian Albers, Frank Salim, A press, © 2010, USA, chapter 4
+*/
+
+//a button was pressed
+function locateThis() {
+	//check if geolocation is supported
+	if (!navigator.geolocation){
+		return document.getElementById("support").innerHTML = "update your browser already!";
+	}
+	navigator.geolocation.getCurrentPosition(showLocation, handleLocationError, {timeout:100000})
+}
+
+function showLocation(position) {
+	var latitudeg = position.coords.latitude,
+	longitudeg = position.coords.longitude,
+	accuracy = position.coords.accuracy;
+	
+	if(accuracy>10){
+		return document.getElementById("support").innerHTML = "Sorry, highly inaccurate. Try again";
+	}
+	
+	var limits = new OpenLayers.Bounds(12345.5, 4567, 8910.25, 123456);
+	var pointg = new OpenLayers.LonLat(longitudeg,latitudeg).transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:3857"));
+	
+	//create a feature point from the above point
+	feature_pointg = new OpenLayers.Feature.Vector(pointg);
+	
+	//if the point is inside the area's limits, render it or not
+	if (!limits.containsLonLat(pointg)){
+		return document.getElementById("support").innerHTML = "Seriously, where are you?";
+	}
+	
+	// add on the geolocLayer vector layer and zoom there.
+	geolocLayer.addFeatures([feature_pointg]);
+	geolocLayer.refresh({force:true});
+	map.zoomToExtent(geolocLayer.getDataExtent());
+	map.zoomTo(8);
+
+}
+//handle geolocation errors
+function handleLocationError(error) {
+	switch(error.code){
+	case 0:
+	document.getElementById("support").innerHTML = "An error occured. Try again.";break;
+	case 1:
+	document.getElementById("support").innerHTML = "You chose not to be located.";break;
+	case 2:
+	document.getElementById("support").innerHTML = "Browser cannot locate you.";break;
+	case 3:
+	document.getElementById("support").innerHTML = "Locating takes way too long.";break;
+	}
+}
+
+
+</script>
