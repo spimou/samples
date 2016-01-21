@@ -1,0 +1,36 @@
+<script>
+
+/* When the page loads, check for data in localStorage. If empty, tell user how to save. If not, graf them all and wrap them aroun buttons.
+First button calls a function that shows more info about the particular value.
+Second button, deletes the particular value from local storage and reruns the function to check if no data and refresh the list
+ */
+
+function initLs(){
+	var lsDiv = document.getElementById("lsDiv");
+	lsDiv.innerHTML="";
+	if(localStorage.length==0){
+		return lsDiv.innerHTML="Hit 'Add to my favorites' to start saving points here";
+	}
+	for(i in localStorage){
+		var name = localStorage.getItem( localStorage.key(i) ) ;
+	    lsDiv.innerHTML+="<input type='button' class='listItem' value='"+name+"' onclick='goThere(\""+name+"\");'> <br> <input type='button'class='deleteThis' value='Delete This' onclick='deleteThis(\""+name+"\");'><br>";	
+	}		
+}
+	
+function deleteThis(name){
+		try{
+			localStorage.removeItem(name);
+			initLS();
+		}
+		catch(e){
+			document.getElementById("lsErrors").innerHTML=" <img   src=notification_error.png> Something went wrong. Try again";
+		}
+}
+
+function goThere(name){
+	//get to that location
+}
+
+window.addEventListener("load",initLs,false);
+
+</script>
