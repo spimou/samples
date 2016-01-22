@@ -1,0 +1,95 @@
+<form  enctype="multipart/form-data" method="post" action="#" onSubmit="saveme(); return false;">    
+    <input name="typeName" id="typeName" type="text" onKeyUp="keyup();" >
+    <select id="listout" size="5"  onChange="listoutaction(value);"  style="display:none" > </select>     
+    <input type="submit" value="Save" />
+</form>
+
+<script>
+
+/*
+Start typing in textfield
+Takes what you typed, sends it to check , if there is something similar, shows it as suggestion in the dropdown
+IF you choose something from the dropdown, passes it to the textfield, so you can edit it and then save it
+OR you can finished typing without choosing anything, so you entered something new. Code then saves it, if you hit "save"
+also checks if you try to save something that is already there
+use websockets so its faster than ajax, less overhead and dont have to open/close all the time
+*/
+
+var so = new WebSocket("ws://localhost:8000");
+so.onerror=function (evt) {
+	//alert this error
+}
+
+var timeout;
+var gid=0;
+var counter = 0;//version responses with a counter...
+
+function keyup(){//debouncing...
+	if(timeout){clearTimeout(timeout);}    
+    timeout = setTimeout(lookup, 250);
+}
+
+function lookup(){
+	counter++ ;
+	var listout  =	document.getElementById("listout");
+	for(var i=listout.options.length-1;i>=0;i--){//remove from bottom to top
+		listout.remove(i);
+	}				   				
+				   
+	so.send(JSON.stringify({command:'typeLookUp',typeToLook:document.getElementById("typeName").value, counter:counter }));
+								   
+	so.onmessage = function (evt){ 
+		var j = JSON.parse(evt.data);
+		var tid = j['tid'];
+		var tname = j['tname'];
+		var count = j['counter'] ;
+		if(count == counter){//only if same version...
+			for(var i=listout.options.length-1;i>=0;i--)
+			{listout.remove(i);}
+			
+			if (tid.length==0){				      
+				listout.style.display="none";
+			}
+			else{
+				listout.style.display="block";
+				for (var f=0; f<tid.length; f++){
+					listout.options[listout.options.length] = new Option(tid[f], tname[f]);
+				}		 
+			}		
+		}					
+	};	
+} 
+
+	
+function listoutaction(v){
+	var listout  =	document.getElementById("listout");
+	var selectedText = listout.options[listout.selectedIndex].text;	
+	document.getElementById("typeName").value=selectedText;
+	gid=v;//this is the id of the selection, the same as in the DB
+	listout.style.display="none";
+}		
+
+		
+function saveme(){				  
+	so.send(JSON.stringify({command:'typeSave',  id:gid, name:document.getElementById("typeName").value}));	
+		   
+	so.onmessage = function (evt) { 
+		var received_msg = evt.data;
+		
+		if(received_msg=="s" ){alert("Saved");}
+		if(received_msg=="a" ){alert("Already exists");}								  
+		
+		document.getElementById("typeName").value="";
+		var listout  =	document.getElementById("listout");
+		for(var i=sele.options.length-1;i>=0;i--)
+		{listout.remove(i);}
+		listout.style.display="none";
+		gid=0;	
+	};	
+	return false;
+}
+
+
+
+</script>
+
