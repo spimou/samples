@@ -1,5 +1,8 @@
 /*
-What on God's green earth is ILIKE? "The key word ILIKE can be used instead of LIKE to make the match case-insensitive according to the active locale. This is not in the SQL standard but is a PostgreSQL extension." - see http://www.postgresql.org/docs/8.3/static/functions-matching.html
+What on God's green earth is ILIKE? 
+"The key word ILIKE can be used instead of LIKE to make the match case-insensitive according to the active locale. 
+This is not in the SQL standard but is a PostgreSQL extension."
+see http://www.postgresql.org/docs/8.3/static/functions-matching.html
 */
 
 //get the identifier and call the right function
@@ -42,7 +45,8 @@ function typeSave(id,name) {
 			client.end();
 	});	
 	
-	//if id = 0 it never changed, so you did not pick/edited something existing, so insert the new thingy - if != 0 you picked something existing that has an id, so update
+	/* if id = 0 it never changed, so you did not pick/edited something existing, so insert the new thingy - 
+	if != 0 you picked something existing that has an id, so update */
 	if(id==0){
 		var queryIn=client.query('INSERT INTO type (name) VALUES($1) ',[tname], function(err, result) {
 				 if(err){console.log(err)}
