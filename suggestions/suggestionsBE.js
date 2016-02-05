@@ -11,7 +11,6 @@ connection.on('message', function(msg) {
 	switch (packet['command']) {
 		case 'typeLookUp':typeLookUp(j['typeToLook'], j['counter']) ;break;
 		case 'typeSave':typeSave(j['id'],j['name']) ;break;
-		case 'deleteera':deleteeraf(packet['id']) ;break;
 	}			
 });
 
